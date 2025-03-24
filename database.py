@@ -14,4 +14,4 @@ async def test():
         res = await conn.execute(text("SELECT 1,2,3"))
         print(f"{res.all()=}")
 
-asyncio.run(test())
+# asyncio.run(test())
