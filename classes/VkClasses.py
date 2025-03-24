@@ -1,4 +1,5 @@
 import datetime
+
 class PhotoSize:
     height: int
     size_type: str #type

@@ -13,7 +13,6 @@ class CacheDTO:
 
     @abstractmethod
     def from_json(self):
-        print(self.data)
         return json.loads(self.data)
 
 class Storage:
@@ -48,6 +47,11 @@ class CacheStorage(Storage):
         towrite = ""
         if isinstance(data, CacheDTO):
             towrite = data.to_json()
+        elif isinstance(data, list) and all(isinstance(elem, CacheDTO) for elem in data):
+            objs = []
+            for e in data:
+                objs.append(e.to_json())
+            towrite = f"[{','.join(objs)}]"
         else:
             towrite = json.dumps(data)
         with open(f"cache/{self.file}.json", 'w', encoding='utf-8') as f:
