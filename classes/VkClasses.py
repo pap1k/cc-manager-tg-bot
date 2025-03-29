@@ -67,7 +67,7 @@ class AttachmentVideo:
     date: datetime.datetime
     description: str
     duration: int
-    image: ImageType
+    images: list[ImageType]
 
     def __init__(self, **kwargs):
         self.response_type = kwargs.get('response_type', '')
@@ -86,9 +86,12 @@ class AttachmentVideo:
 
         self.description = kwargs.get('description', '')
         self.duration = kwargs.get('duration', 0)
-        self.image = kwargs.get('image')
-        if self.image != None:
-            self.image = ImageType(**self.image)
+        self.images = kwargs.get('image')
+        if self.images != None:
+            images = self.images
+            self.images = []
+            for image in images:
+                self.images.append(ImageType(**image))
 
 class Attachment:
     _type: str
@@ -104,6 +107,16 @@ class Attachment:
         self.photo = kwargs.get("photo")
         if self.photo != None:
             self.photo = AttachmentPhoto(**self.photo)
+
+class Copyright:
+    name: str
+    link: str
+    link_type: str
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.link = kwargs.get('link')
+        self.link_type = kwargs.get('type')
 
 class Wall:
     inner_type: str
@@ -131,6 +144,7 @@ class Wall:
     views: dict
     track_code: str
     attachments: list[Attachment]
+    copyright: Copyright
 
     def __init__(self, **kwargs):
         self.inner_type = kwargs.get('inner_type', '')
@@ -170,4 +184,8 @@ class Wall:
         att = kwargs.get('attachments', [])
         if len(att) > 0:
             for attachment in att:
-                self.attachments.append(Attachment(**att))
+                self.attachments.append(Attachment(**attachment))
+
+        self.copyright = kwargs.get("copyright")
+        if self.copyright:
+            self.copyright = Copyright(**self.copyright)

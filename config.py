@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     @property
     def VK_GROUP_DOMAIN(self):
         return "offtrinityrpg"
+    
+    @property
+    def TG_CHAT_ID(self):
+        return -1002611839532
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -1,11 +1,15 @@
 from abc import abstractmethod
 from typing import Literal
 import json
+import os
 
 class CacheDTO:
     data : object
     def __init__(self, **data):
         self.data = data
+
+    def __repl__(self):
+        return json.dumps(self.data)
 
     @abstractmethod
     def to_json(self):
@@ -63,8 +67,15 @@ class CacheStorage(Storage):
     # Если да, то возвращаем массив этих объектов
     # НЕ ПОДДЕРЖИВАЕТ МАССИВ МАССИВОВ
     def get(self) -> CacheDTO | object:
+        if not os.path.isfile(f"cache/{self.file}.json"):
+            with open(f"cache/{self.file}.json", 'w', encoding='utf-8') as f:
+                f.close()
         with open(f"cache/{self.file}.json", 'r', encoding='utf-8') as f:
-            data = json.loads(f.read())
+            txt = f.read()
+            if txt == '':
+                if self.is_list: return []
+                else: return {}
+            data = json.loads(txt)
             if self.classbind != None:
                 if self.is_list:
                     r = []

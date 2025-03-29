@@ -1,5 +1,7 @@
 import aiohttp, logging
 from classes.VkClasses import Wall
+from config import settings
+import json
 
 API_URL = "https://api.vk.com/method/"
 
@@ -18,14 +20,16 @@ class VK:
         if response == None:
             return None
         result: list[Wall] = []
-        for elem in response:
+        for elem in response['items']:
             result.append(Wall(**elem))
         return result
 
 
     async def request(self, method: str, **params) -> list | None:
+        params['v'] = self.v
+        params['lang'] = self.lang
         async with aiohttp.ClientSession() as session:
-            async with session.post(API_URL+method, data=params) as response:
+            async with session.post(API_URL+method, data=params, headers={"Authorization": f"Bearer {settings.VK_TOKEN}"}, ssl=False) as response:
                 try:
                     vkr = await response.json()
                     if 'response' in vkr:
