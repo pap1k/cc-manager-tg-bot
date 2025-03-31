@@ -8,6 +8,7 @@ from classes.vk import VK
 from classes.VkClasses import Wall
 from helpers.fix_cache import fix_cache
 from helpers.vk_to_tg import vk_to_tg
+from helpers.send_log import AsyncRemoteHandler, send_to_remote
 
 POLL_DELAY = 60
 CHECK_TIME = 60*60*5 # 5 chasov
@@ -17,6 +18,8 @@ cache = CacheStorage("wall-posts", PostCache, True)
 
 async def make_post(post: Wall):
     tg = vk_to_tg(post)
+    if not tg:
+        return
     if tg.topic_id == -1:
         logging.info(f"[VK] Функция преобразования не определила тег, пропускаем")
         c = PostCache(vk_id=post.id, tg_id=0, post_time=post.date, last_edit=post.edited)
@@ -66,6 +69,10 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
 
 async def run():
     logging.basicConfig(level=logging.DEBUG)
+
+    logger = logging.getLogger()
+    logger.addHandler(AsyncRemoteHandler(send_to_remote))
+
     do = True
     counter = 0
     while do:

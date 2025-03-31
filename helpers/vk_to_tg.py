@@ -19,10 +19,17 @@ class TgPost:
 
 topics = {
     "forum": 6,
+    "admin": 58,
 }
 
 tags = {
     "ccnews": "forum",
+    "ccbannews": "admin",
+    "ccother": "__skip",
+    "ccgroup": "__skip",
+    "cclottery": "__skip",
+    "ccevents": "__skip",
+    "ccproject": "__skip",
 }
 
 def extract_tag_and_text(content: str) -> tuple[str | None, str]:
@@ -41,14 +48,18 @@ def extract_tag_and_text(content: str) -> tuple[str | None, str]:
 
     return tag if tag else None, text.strip()
 
-def vk_to_tg(wall: Wall) -> TgPost:
+def vk_to_tg(wall: Wall) -> TgPost | None:
     posttag, posttext = extract_tag_and_text(wall.text)
     topic = -1
     if posttag:
         for tag in tags:
             if tag == posttag:
-                if tags[tag] in topics:
-                    topic = topics[tags[tag]]
+                topicname = tags[tag]
+                if topicname == "__skip":
+                    logging.info(f"[PARSE] Пропускаем пост <{wall.id}>, тег <{posttag}>")
+                    return None
+                if topicname in topics:
+                    topic = topics[topicname]
                 else:
                     logging.warning(f"[PARSE] Не получилось найти топик для тега <{posttag}>")
         if topic == -1:

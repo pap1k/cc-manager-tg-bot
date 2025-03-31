@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     @property
     def TG_CHAT_ID(self):
         return -1002611839532
+    
+    @property
+    def LOG_CHAT_ID(self):
+        return -1002644900239
 
     model_config = SettingsConfigDict(env_file=".env")
 
