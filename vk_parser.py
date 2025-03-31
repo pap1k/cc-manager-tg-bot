@@ -21,7 +21,7 @@ async def make_post(post: Wall):
     tg = vk_to_tg(post)
     if not tg:
         skip_data: list[SkipWallPost] = skip_cache.get()
-        skip_data.append(post.id)
+        skip_data.append(SkipWallPost(vk_id=post.id))
         skip_cache.store(skip_data)
         return
     if tg.topic_id == -1:
@@ -63,7 +63,7 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
             for skip in skip_data:
                 if skip.vk_id == post.id:
                     need_post = False
-                    
+
             for p in posted:
                 if p.vk_id == post.id:
                     need_post = False
@@ -83,12 +83,15 @@ async def run():
     logger = logging.getLogger()
     logger.addHandler(AsyncRemoteHandler(send_to_remote))
 
+    logging.info("Started")
+
     do = True
     counter = 0
     while do:
         try:
             to_post, to_update = await get_vk_updates()
-            if to_post and to_update:
+
+            if to_post != None and to_update != None:
                 if len(to_update) > 0:
                     for post in to_update:
                         await edit_post(post)
