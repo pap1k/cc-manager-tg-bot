@@ -68,10 +68,11 @@ def vk_to_tg(wall: Wall) -> TgPost | None:
         logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id}")
 
     post = TgPost(posttext, settings.TG_CHAT_ID, topic)
-    if len(wall.attachments) > 0:
-        for attach in wall.attachments:
-            if attach.photo:
-                post.add_attach(attach)
+    # Скрыл аттачи чтобы можно было нормально постить длинный текст (лимиты тг)
+    # if len(wall.attachments) > 0:
+    #     for attach in wall.attachments:
+    #         if attach.photo:
+    #             post.add_attach(attach)
     
     if len(post.attachments) == 0:
         if wall.copyright:
