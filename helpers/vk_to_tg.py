@@ -30,6 +30,7 @@ tags = {
     "cclottery": "__skip",
     "ccevents": "__skip",
     "ccproject": "__skip",
+    "cctopusers": "__skip",
 }
 
 def extract_tag_and_text(content: str) -> tuple[str | None, str]:
