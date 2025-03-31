@@ -1,7 +1,7 @@
 import asyncio, datetime, logging
 from typing import Tuple
 from classes.Storage import CacheStorage
-from classes.PostCache import PostCache
+from classes.CacheModels import PostCache, SkipWallPost
 from config import settings
 from classes.bot import bot
 from classes.vk import VK
@@ -15,10 +15,14 @@ CHECK_TIME = 60*60*5 # 5 chasov
 
 vk = VK(settings.VK_TOKEN)
 cache = CacheStorage("wall-posts", PostCache, True)
+skip_cache = CacheStorage("skip-wall-posts", SkipWallPost, True)
 
 async def make_post(post: Wall):
     tg = vk_to_tg(post)
     if not tg:
+        skip_data: list[SkipWallPost] = skip_cache.get()
+        skip_data.append(post.id)
+        skip_cache.store(skip_data)
         return
     if tg.topic_id == -1:
         logging.info(f"[VK] Функция преобразования не определила тег, пропускаем")
@@ -47,13 +51,19 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
     wall.reverse()
     if wall:
         posted: list[PostCache] = cache.get()
+        skip_data: list[SkipWallPost] = skip_cache.get()
         queue_post = []
         queue_edit = []
+
         for post in wall:
             # Проверка новый постов
             # Проверка даты изменения поста по CHECK_TIME
             need_post = True
             chache_pointer = None
+            for skip in skip_data:
+                if skip.vk_id == post.id:
+                    need_post = False
+                    
             for p in posted:
                 if p.vk_id == post.id:
                     need_post = False
@@ -78,21 +88,22 @@ async def run():
     while do:
         try:
             to_post, to_update = await get_vk_updates()
-            if len(to_update) > 0:
-                for post in to_update:
-                    await edit_post(post)
+            if to_post and to_update:
+                if len(to_update) > 0:
+                    for post in to_update:
+                        await edit_post(post)
 
-            if len(to_post) > 0:
-                for post in to_post:
-                    await make_post(post)
+                if len(to_post) > 0:
+                    for post in to_post:
+                        await make_post(post)
 
-            #Чистим кеш каждые 10 записей
-            counter+= 1
-            if counter % 10 == 0:
-                if fix_cache(cache, 100):
-                    logging.info("[VK] Cache cleared!")
-                if counter > 100_000:
-                    counter = 0
+                #Чистим кеш каждые 10 записей
+                counter+= 1
+                if counter % 10 == 0:
+                    if fix_cache(cache, 100) and fix_cache(skip_cache, 100):
+                        logging.info("[VK] Cache cleared!")
+                    if counter > 100_000:
+                        counter = 0
 
             await asyncio.sleep(POLL_DELAY)
         except KeyboardInterrupt:
