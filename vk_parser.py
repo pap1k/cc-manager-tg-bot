@@ -48,8 +48,8 @@ async def edit_post(post: PostCache):
 
 async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
     wall = await vk.wall_get(domain=settings.VK_GROUP_DOMAIN, count=10)
-    wall.reverse()
     if wall:
+        wall.reverse()
         posted: list[PostCache] = cache.get()
         skip_data: list[SkipWallPost] = skip_cache.get()
         queue_post = []
