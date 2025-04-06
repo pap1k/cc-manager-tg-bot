@@ -18,8 +18,8 @@ class TgPost:
         self.attachments.append(attach.photo.orig_photo.url)
 
 topics = {
-    "forum": 6,
-    "admin": 58,
+    "forum": 155,
+    "admin": 153,
 }
 
 tags = {
