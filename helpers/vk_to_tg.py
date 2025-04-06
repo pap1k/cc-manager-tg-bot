@@ -25,12 +25,16 @@ topics = {
 tags = {
     "ccnews": "forum",
     "ccbannews": "admin",
+    "ccreport": "admin",
     "ccother": "__skip",
     "ccgroup": "__skip",
     "cclottery": "__skip",
     "ccevents": "__skip",
     "ccproject": "__skip",
     "cctopusers": "__skip",
+    "ccoffers": "__skip",
+    "ccmovie": "__skip",
+    "ccfactionrace": "__skip",
 }
 
 def extract_tag_and_text(content: str) -> tuple[str | None, str]:
