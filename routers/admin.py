@@ -16,8 +16,8 @@ async def anon(message: Message):
         if response.status == 200:
             data = await response.json()
             if 'url' in data:
-                await msg.delete()
                 await message.reply_photo(data['url'])
+                await msg.delete()
                 return
     await msg.edit_text("Не получилось ничего найти :(\nПопробуйте позже")
 
