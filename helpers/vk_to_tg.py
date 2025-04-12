@@ -84,7 +84,7 @@ def vk_to_tg(wall: Wall) -> TgPost | None:
             link_txt = "абоба"
             match wall.copyright.name:
                 case "gta-trinity.com":
-                    link_txt = "Посмотреть на форуме"
+                    link_txt = "Подробности на форуме"
             post.text += f"\n\n<a href=\"{wall.copyright.link}\">{link_txt}</a>"
         
         post.text += f"\n<a href=\"https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
