@@ -3,10 +3,23 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from middlewares.admin import CheckAdminAccessMiddleware
 from config import settings
+import aiohttp
 
 router = Router()
 router.message.outer_middleware(CheckAdminAccessMiddleware())
 
+@router.message(Command("cat"))
+async def anon(message: Message):
+    msg = await message.reply("Ищу котика для вас...")
+    async with aiohttp.ClientSession() as session:
+        response = await session.get("https://aleatori.cat/random.json")
+        if response.status == 200:
+            data = await response.json()
+            if 'url' in data:
+                await msg.delete()
+                await message.reply_photo(data['url'])
+                return
+    await msg.edit_text("Не получилось ничего найти :(\nПопробуйте позже")
 
 @router.message(Command("anon"))
 async def anon(message: Message):
