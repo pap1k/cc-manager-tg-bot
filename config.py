@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     
     @property
     def ADMIN_LIST(self):
-        return [697261219, 7592996281, 7651698093, 903160137, 305356170]
+        return [697261219, 7592996281, 7651698093, 903160137, 305356170, 1570109707]
 
     model_config = SettingsConfigDict(env_file=".env")
 
