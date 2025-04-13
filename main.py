@@ -1,12 +1,15 @@
 from config import settings
 from aiogram import Bot, Dispatcher, types
 import asyncio, logging
-from routers.admin import router as admin_router
+
+from allRouters import routers
+
 bot = Bot(token=settings.TG_TOKEN)
 dp = Dispatcher()
     
 async def run():
-    dp.include_router(admin_router)
+    for router in routers:
+        dp.include_router(router)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

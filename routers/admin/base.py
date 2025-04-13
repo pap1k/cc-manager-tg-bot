@@ -4,21 +4,41 @@ from aiogram.types import Message
 from middlewares.admin import CheckAdminAccessMiddleware
 from config import settings
 import aiohttp
+from sqlalchemy.exc import IntegrityError
+
+from database import db_session
+from models import ModerModel, Level
 
 router = Router()
 router.message.outer_middleware(CheckAdminAccessMiddleware())
 
+@router.message(Command("test"))
+async def test(message: Message):
+    async with db_session() as session:
+        moder = ModerModel(tg_id=message.from_user.id)
+        session.add(moder)
+        try:
+            await session.commit()
+            await message.reply("ok")
+        except IntegrityError:
+            await message.reply("Пользователь с таким ID уже присутствует в базе")
+        except Exception:
+            await message.reply("Произошла ошибка")
+
 @router.message(Command("cat"))
-async def anon(message: Message):
+async def cat(message: Message):
     msg = await message.reply("Ищу котика для вас...")
     async with aiohttp.ClientSession() as session:
-        response = await session.get("https://aleatori.cat/random.json")
-        if response.status == 200:
-            data = await response.json()
-            if 'url' in data:
-                await message.reply_photo(data['url'])
-                await msg.delete()
-                return
+        try:
+            response = await session.get("https://aleatori.cat/random.json")
+            if response.status == 200:
+                data = await response.json()
+                if 'url' in data:
+                    await message.reply_photo(data['url'])
+                    await msg.delete()
+                    return
+        except Exception:
+            await message.edit_text("Произошла ошибка при получении котика :(")
     await msg.edit_text("Не получилось ничего найти :(\nПопробуйте позже")
 
 @router.message(Command("anon"))
