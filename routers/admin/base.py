@@ -1,16 +1,16 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-from middlewares.admin import CheckAdminAccessMiddleware
+from middlewares.admin import CheckModerAccessMiddleware
 from config import settings
 import aiohttp
 from sqlalchemy.exc import IntegrityError
 
 from database import db_session
-from models import ModerModel, Level
+from models import ModerModel
 
 router = Router()
-router.message.outer_middleware(CheckAdminAccessMiddleware())
+router.message.outer_middleware(CheckModerAccessMiddleware())
 
 @router.message(Command("test"))
 async def test(message: Message):
