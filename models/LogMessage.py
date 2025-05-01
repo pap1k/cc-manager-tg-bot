@@ -9,5 +9,6 @@ class LogMessagesModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[tg_id_f]
     message: Mapped[str]
+    link: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[created_at_f]
     updated_at: Mapped[updated_at_f]

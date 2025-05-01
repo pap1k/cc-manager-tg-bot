@@ -11,10 +11,9 @@ router = Router()
 
 @router.message()
 async def any_group_message(message: Message):
-    print(message.chat.id, settings.TG_CHAT_ID, message.chat.type, ChatType.SUPERGROUP)
-    print(message.from_user.id, message.text)
     if message.message_thread_id == settings.CHAT_THREAD_ID:
         async with db_session() as session:
-            record = LogMessagesModel(user_id=message.from_user.id, message=message.text)
+            text = message.text if message.text else "<Не текст>"
+            record = LogMessagesModel(user_id=message.from_user.id, message=text, link=message.get_url(include_thread_id=True))
             session.add(record)
             await session.commit()

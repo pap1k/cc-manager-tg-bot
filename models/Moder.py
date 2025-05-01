@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base, created_at_f, updated_at_f, tg_id_f_unique
-from sqlalchemy import BigInteger
 import enum
 
 class Level(enum.Enum):
