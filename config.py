@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import sys
 
 class Settings(BaseSettings):
     DB_HOST:  str
@@ -7,6 +8,7 @@ class Settings(BaseSettings):
     DB_NAME:  str
     DB_PORT:  int
     TG_TOKEN: str
+    TG_TOKEN_TEST: str
     VK_TOKEN: str
 
     @property
@@ -31,4 +33,21 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
-settings = Settings()
+class SettingsTest(Settings):
+    def __init__(self):
+        super().__init__()
+        self.TG_TOKEN = self.TG_TOKEN_TEST
+
+    @property
+    def TG_CHAT_ID(self):
+        return -1002644900239
+
+    model_config = SettingsConfigDict(env_file=".env")
+
+
+if "-test" in sys.argv:
+    print("Loaded test settings")
+    settings = SettingsTest()
+else:
+    print("Lodead production settings")
+    settings = Settings()
