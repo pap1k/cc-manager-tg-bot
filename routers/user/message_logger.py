@@ -2,23 +2,19 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.enums import ChatType
 from aiogram import F
-from aiogram.fsm.state import State, StatesGroup
 from config import settings
 
 from database import db_session
-from models import LogMessage
+from models import LogMessagesModel
 
 router = Router()
 
-class BanStage(StatesGroup):
-    author_id = State()
-    punish_select = State()
-    term = State()
-    reason = State()
-
-@router.message(F.chat.id == settings.TG_CHAT_ID, F.chat.type == ChatType.SUPERGROUP)
+@router.message()
 async def any_group_message(message: Message):
-    async with db_session() as session:
-        record = LogMessage(user_id=message.from_user.id, message=message.text)
-        session.add(record)
-        await session.commit()
+    print(message.chat.id, settings.TG_CHAT_ID, message.chat.type, ChatType.SUPERGROUP)
+    print(message.from_user.id, message.text)
+    if message.message_thread_id == settings.CHAT_THREAD_ID:
+        async with db_session() as session:
+            record = LogMessagesModel(user_id=message.from_user.id, message=message.text)
+            session.add(record)
+            await session.commit()

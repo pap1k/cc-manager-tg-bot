@@ -1,3 +1,7 @@
 from config import settings
+from database import Base
+from models import *
 
-print(settings.TG_TOKEN)
+
+for table in Base.metadata.tables:
+    print(table)

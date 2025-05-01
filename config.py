@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     @property
     def ADMIN_LIST(self):
         return [697261219, 7592996281, 7651698093, 903160137, 305356170, 1570109707]
+    
+    @property
+    def IS_TEST(self):
+        return False
+    
+    @property
+    def CHAT_THREAD_ID(self):
+        return 1
 
     model_config = SettingsConfigDict(env_file=".env")
 
@@ -41,6 +49,14 @@ class SettingsTest(Settings):
     @property
     def TG_CHAT_ID(self):
         return -1002644900239
+
+    @property
+    def IS_TEST(self):
+        return True
+    
+    @property
+    def CHAT_THREAD_ID(self):
+        return 330
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -27,11 +27,13 @@ def edit_moder(moder: ModerModel):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Изменить роль", callback_data="act:role")],
         [InlineKeyboardButton(text="Изменить ник", callback_data="act:nick")],
-        [prom_dem]
+        [prom_dem],
+        [InlineKeyboardButton(text="Назад", callback_data="act:back")]
     ])
 
 def change_role(roles: dict):
     btns = []
     for role in roles:
         btns.append([InlineKeyboardButton(text=role, callback_data=f"role:{role}")])
+    btns.append([InlineKeyboardButton(text="Назад", callback_data="role:back")])
     return InlineKeyboardMarkup(inline_keyboard=btns)

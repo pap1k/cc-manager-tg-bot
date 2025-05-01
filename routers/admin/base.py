@@ -10,7 +10,7 @@ from database import db_session
 from models import ModerModel
 
 router = Router()
-router.message.outer_middleware(CheckModerAccessMiddleware())
+router.message.middleware(CheckModerAccessMiddleware())
 
 @router.message(Command("test"))
 async def test(message: Message):
@@ -43,6 +43,8 @@ async def cat(message: Message):
 
 @router.message(Command("anon"))
 async def anon(message: Message):
+    if settings.IS_TEST:
+        return await message.reply("Бот запущен в тестовом режиме, команда недоступна")
     r = await message.bot.get_chat_member(settings.TG_CHAT_ID, message.from_user.id)
     if r.status != 'administrator':
         await message.reply("Вы не администратор")
