@@ -8,8 +8,9 @@ from database import db_session
 from models import LogMessagesModel
 
 router = Router()
+router.message.middleware()
 
-@router.message()
+@router.message(F.chat.id == settings.TG_CHAT_ID)
 async def any_group_message(message: Message):
     if message.message_thread_id == settings.CHAT_THREAD_ID:
         async with db_session() as session:

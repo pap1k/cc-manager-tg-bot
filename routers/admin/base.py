@@ -7,7 +7,10 @@ import aiohttp
 from sqlalchemy.exc import IntegrityError
 
 from database import db_session
-from models import ModerModel
+from models import ModerModel, Level
+
+from services.Moder import ModerService
+from .rules import moder_rules
 
 router = Router()
 router.message.middleware(CheckModerAccessMiddleware())
@@ -42,77 +45,24 @@ async def cat(message: Message):
     await msg.edit_text("Не получилось ничего найти :(\nПопробуйте позже")
 
 @router.message(Command("anon"))
-async def anon(message: Message):
-    if settings.IS_TEST:
-        return await message.reply("Бот запущен в тестовом режиме, команда недоступна")
+async def anon(message: Message, moder_caller: ModerModel):
     r = await message.bot.get_chat_member(settings.TG_CHAT_ID, message.from_user.id)
     if r.status != 'administrator':
         await message.reply("Вы не администратор")
         return
     if r.is_anonymous == True:
-        print("disable")
         await message.bot.promote_chat_member(
                         settings.TG_CHAT_ID,
                         message.from_user.id,
                         is_anonymous=False,
-                        can_manage_chat= True,
-                        can_delete_messages= True,
-                        can_manage_video_chats= True,
-                        can_restrict_members= True,
-                        can_promote_members= True,
-                        can_change_info= True,
-                        can_invite_users= True,
-                        can_post_stories= True,
-                        can_edit_stories= True,
-                        can_delete_stories= True,
-                        can_post_messages= True,
-                        can_edit_messages= True,
-                        can_pin_messages= True,
-                        can_manage_topics= True)
+                        **moder_rules[moder_caller.level])
         await message.reply("🔴Анонимка выключена")
     elif r.is_anonymous == False:
-        print("enable")
         await message.bot.promote_chat_member(
                         settings.TG_CHAT_ID,  
                         message.from_user.id,
                         is_anonymous= True,
-                        can_manage_chat= True,
-                        can_delete_messages= True,
-                        can_manage_video_chats= True,
-                        can_restrict_members= True,
-                        can_promote_members= True,
-                        can_change_info= True,
-                        can_invite_users= True,
-                        can_post_stories= True,
-                        can_edit_stories= True,
-                        can_delete_stories= True,
-                        can_post_messages= True,
-                        can_edit_messages= True,
-                        can_pin_messages= True,
-                        can_manage_topics= True)
+                        **moder_rules[moder_caller.level])
         await message.reply("🟢Анонимка включена")
     else:
         await message.reply("Не удалось определить статус анонимки")
-
-@router.message(Command("admin"))
-async def makeadmin(message: Message):
-    await message.bot.promote_chat_member(
-                        settings.TG_CHAT_ID,
-                        message.from_user.id,
-                        is_anonymous= True,
-                        can_manage_chat= True,
-                        can_delete_messages= True,
-                        can_manage_video_chats= True,
-                        can_restrict_members= True,
-                        can_promote_members= True,
-                        can_change_info= True,
-                        can_invite_users= True,
-                        can_post_stories= True,
-                        can_edit_stories= True,
-                        can_delete_stories= True,
-                        can_post_messages= True,
-                        can_edit_messages= True,
-                        can_pin_messages= True,
-                        can_manage_topics= True
-                        )
-    await message.reply("Успешно")

@@ -17,6 +17,7 @@ class TgPost:
     def add_attach(self, attach: Attachment):
         self.attachments.append(attach.photo.orig_photo.url)
 
+
 topics = {
     "forum": 155,
     "admin": 153,
@@ -25,7 +26,7 @@ topics = {
 tags = {
     "ccnews": "forum",
     "ccbannews": "admin",
-    "ccreport": "admin",
+    "ccreport": "forum",
     "ccother": "__skip",
     "ccgroup": "__skip",
     "cclottery": "__skip",
@@ -35,6 +36,7 @@ tags = {
     "ccoffers": "__skip",
     "ccmovie": "__skip",
     "ccfactionrace": "__skip",
+    "ccfindcode": "__skip",
 }
 
 def extract_tag_and_text(content: str) -> tuple[str | None, str]:

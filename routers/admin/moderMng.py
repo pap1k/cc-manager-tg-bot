@@ -8,89 +8,18 @@ from middlewares.admin import CheckModerAccessMiddleware
 from config import settings
 from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.exc import IntegrityError
-from services.ModerService import ModerService
+from services.Moder import ModerService
 
 from models import Level, ModerModel
 from database import db_session
 
+from .rules import moder_rules, demote_rules
 from .keyboards import moderlist, edit_moder, change_role
 
 router = Router()
-router.callback_query.middleware(CheckModerAccessMiddleware(Level.admin))
-router.message.middleware(CheckModerAccessMiddleware(Level.admin))
-router.message_reaction.middleware(CheckModerAccessMiddleware(Level.admin))
-
-moder_rules = {
-    Level.junior: {
-        "can_delete_messages": True,
-        "can_post_messages": True,
-        "can_edit_messages": True,
-        "can_pin_messages": True,
-        "can_manage_topics": True,
-        "can_change_info": False,
-    },
-    Level.middle: {
-        "can_delete_messages": True,
-        "can_restrict_members": True,
-        "can_invite_users": True,
-        "can_post_messages": True,
-        "can_edit_messages": True,
-        "can_pin_messages": True
-    },
-    Level.senior: {
-        "is_anonymous": True,
-        "can_manage_chat": True,
-        "can_delete_messages": True,
-        "can_manage_video_chats": True,
-        "can_restrict_members": True,
-        "can_promote_members": True,
-        "can_change_info": True,
-        "can_invite_users": True,
-        "can_post_stories": True,
-        "can_edit_stories": True,
-        "can_delete_stories": True,
-        "can_post_messages": True,
-        "can_edit_messages": True,
-        "can_pin_messages": True,
-        "can_manage_topics": True
-    },
-    Level.admin: {
-        "is_anonymous": True,
-        "can_manage_chat": True,
-        "can_delete_messages": True,
-        "can_manage_video_chats": True,
-        "can_restrict_members": True,
-        "can_promote_members": True,
-        "can_change_info": True,
-        "can_invite_users": True,
-        "can_post_stories": True,
-        "can_edit_stories": True,
-        "can_delete_stories": True,
-        "can_post_messages": True,
-        "can_edit_messages": True,
-        "can_pin_messages": True,
-        "can_manage_topics": True
-    }
-
-}
-
-demote_rules = {
-    "is_anonymous": False,
-    "can_manage_chat": False,
-    "can_delete_messages": False,
-    "can_manage_video_chats": False,
-    "can_restrict_members": False,
-    "can_promote_members": False,
-    "can_change_info": False,
-    "can_invite_users": False,
-    "can_post_stories": False,
-    "can_edit_stories": False,
-    "can_delete_stories": False,
-    "can_post_messages": False,
-    "can_edit_messages": False,
-    "can_pin_messages": False,
-    "can_manage_topics": False
-}
+router.callback_query.middleware(CheckModerAccessMiddleware(Level.senior))
+router.message.middleware(CheckModerAccessMiddleware(Level.senior))
+router.message_reaction.middleware(CheckModerAccessMiddleware(Level.senior))
 
 class Navigation(StatesGroup):
     listmoders = State()
@@ -106,13 +35,13 @@ class NewAdmin(StatesGroup):
 
 async def display_moder_info(message: Message, state: FSMContext, moder: ModerModel):
     info = f"""
-        Информация по модератору
+        <b>ИНФОРМАЦИЯ ПО МОДЕРАТОРУ</b>
         Telegram ID: <code>{moder.tg_id}</code>
         Записан как: <code>{moder.name if moder.name else ''}</code>
         Уровень: <code>{moder.level}</code>
         Снят: <code>{'Нет' if moder.active else 'Да'}</code>
         Дата назначения: <code>{moder.created_at.strftime('%d.%m.%Y %H:%M:%S')}</code>
-        Последние изменение: <code>{moder.updated_at.strftime('%d.%m.%Y %H:%M:%S')}</code>
+        Последнее изменение: <code>{moder.updated_at.strftime('%d.%m.%Y %H:%M:%S')}</code>
     """
     text = '\n'.join(list(map(str.strip, info.split("\n"))))
     await state.set_state(Editmoder.select)
@@ -194,7 +123,7 @@ async def edit_moder_cb(callback: CallbackQuery, moder_caller: ModerModel, state
             if moder_caller.level.value >= Level.senior.value:
                 await callback.answer()
                 await state.set_state(Editmoder.edit_name)
-                await callback.message.bot.send_message(callback.message.chat.id, "Укажите новый ник для модератора:")
+                await callback.message.edit_text("Укажите новый ник для модератора:")
             else:
                 await callback.answer("Недостаточно прав")
                 await display_moder_info(callback.message, state, moder)
@@ -202,8 +131,7 @@ async def edit_moder_cb(callback: CallbackQuery, moder_caller: ModerModel, state
             await callback.message.reply("Функция не готова")
 
 @router.callback_query(Editmoder.change_level)
-async def edit_moder_cb(callback: CallbackQuery, state: FSMContext):
-    await callback.message.edit_text("Ожидайте...")
+async def edit_moder_role_cb(callback: CallbackQuery, moder_caller: ModerModel, state: FSMContext):
     хуйня, newrole = callback.data.split(":")
     data = await state.get_data()
     moder: ModerModel = data['moder']
@@ -212,6 +140,10 @@ async def edit_moder_cb(callback: CallbackQuery, state: FSMContext):
     roles_list = list(moder_rules.keys())
     for role in roles_list:
         if str(role) == newrole:
+            if moder_caller.level.value <= role.value:
+                await callback.answer("Недостаточно прав")
+                return
+            await callback.message.edit_text("Ожидайте...")
             moder = await ModerService.update(moder, level=role)
             # try:
             await callback.bot.promote_chat_member(settings.TG_CHAT_ID, moder.tg_id, **moder_rules[role])
@@ -233,7 +165,7 @@ async def name_input(message: Message, state: FSMContext):
     await display_moder_info(message, state, moder)
 
 @router.message(NewAdmin.tg_id)
-async def name_input(message: Message, state: FSMContext):
+async def tg_id_input(message: Message, state: FSMContext):
     if message.text == '/cancel':
         await state.clear()
         await message.reply("Отменено.")
@@ -256,7 +188,7 @@ async def name_input(message: Message, state: FSMContext):
     await message.reply("Укажите ник или заметку по модератору для идентификации")
     
 @router.message(NewAdmin.name)
-async def name_input(message: Message, state: FSMContext):
+async def new_moder_name_input(message: Message, moder_caller: ModerModel, state: FSMContext):
     if message.text == '/cancel':
         await state.clear()
         await message.reply("Отменено.")
@@ -272,6 +204,7 @@ async def name_input(message: Message, state: FSMContext):
             await message.bot.promote_chat_member(settings.TG_CHAT_ID, tg_id, **moder_rules[Level.junior])
         except IntegrityError:
             return await msg.edit_text("Пользователь с таким ID уже присутствует в базе")
+    await list_all_moders(message, state, moder_caller)
     await msg.edit_text("Модератор успешно добавлен. Уровнь: Level.junior")
 
     

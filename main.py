@@ -4,7 +4,6 @@ import asyncio, logging
 import sys
 
 from allRouters import routers
-from routers.user.message_logger import router
 
 from aiogram.enums import UpdateType
 
@@ -12,9 +11,8 @@ bot = Bot(token=settings.TG_TOKEN)
 dp = Dispatcher()
 
 async def run():
-    dp.include_router(router)
-    # for router in routers:
-    #     dp.include_router(router)
+    for router in routers:
+        dp.include_router(router)
     await dp.start_polling(bot, allowed_updates=[UpdateType.MESSAGE_REACTION, UpdateType.MESSAGE, UpdateType.CALLBACK_QUERY])
 
 def main():
