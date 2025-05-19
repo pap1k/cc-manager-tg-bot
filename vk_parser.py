@@ -11,7 +11,6 @@ from helpers.vk_to_tg import vk_to_tg
 from helpers.send_log import AsyncRemoteHandler, send_to_remote
 
 POLL_DELAY = 60
-CHECK_TIME = 60*60*5 # 5 chasov
 
 vk = VK(settings.VK_TOKEN)
 cache = CacheStorage("wall-posts", PostCache, True)
@@ -56,8 +55,7 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
         queue_edit = []
 
         for post in wall:
-            # Проверка новый постов
-            # Проверка даты изменения поста по CHECK_TIME
+            # Проверка новых постов
             need_post = True
             chache_pointer = None
             for skip in skip_data:
