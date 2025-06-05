@@ -6,7 +6,7 @@ class TagSettingsModel(Base):
     __tablename__ = "tag_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    tag: Mapped[str]
+    tag: Mapped[str] = mapped_column(unique=True)
     channel: Mapped[str]
     created_at: Mapped[created_at_f]
     updated_at: Mapped[updated_at_f]
