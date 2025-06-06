@@ -38,6 +38,12 @@ class CustomState:
 
 custom_states : dict[int, CustomState] = {} #id: CustomState
 
+def user_in_custom_states(message: Message | CallbackQuery):
+    return message.from_user.id in custom_states
+
+def user_on_correct_step(need_step: State):
+    return lambda message: user_in_custom_states(message) and need_step == custom_states[message.from_user.id].step
+
 @router.message_reaction(F.chat.id == settings.TG_CHAT_ID, F.new_reaction[0].emoji == "🖕")
 async def handle_reaction(event: MessageReactionUpdated, state: FSMContext):
     """Пересылает сообщение, пытается определить автора. Если автор определен, сообщение удаляется. Если не опреден, то запрашивается ID автора и удаляется позже"""
@@ -59,13 +65,9 @@ async def handle_reaction(event: MessageReactionUpdated, state: FSMContext):
         await event.bot.send_message(event.user.id, f"Автор сообщения скрыл свой профиль. Укажите его ID:")
 
 
-@router.message()
-async def input_id(message: Message, state: FSMContext):
-    if(message.from_user.id not in custom_states):
-        return
+@router.message(F.func(user_in_custom_states) and F.func(user_on_correct_step(BanStage.author_id)))
+async def input_id(message: Message):
     my_state = custom_states[message.from_user.id]
-    if my_state.step != BanStage.author_id:
-        return
     if message.text == '/cancel':
         del custom_states[message.from_user.id]
         await message.reply("Отменено.")
@@ -85,13 +87,8 @@ async def input_id(message: Message, state: FSMContext):
     my_state.step = BanStage.punish_select
     await message.reply(f"Выберите наказание для пользователя <code>{member.user.full_name}</code>", parse_mode="HTML", reply_markup=punishment_list())
 
-@router.callback_query()
+@router.callback_query(F.func(user_in_custom_states) and F.func(user_on_correct_step(BanStage.punish_select)))
 async def apply_punish(callback: CallbackQuery, state: FSMContext):
-    if(callback.from_user.id not in custom_states):
-        return
-    my_state = custom_states[callback.from_user.id]
-    if my_state.step != BanStage.punish_select:
-        return
     await callback.answer()
     if callback.data == "kick":
         ...
