@@ -21,7 +21,7 @@ def tag_settings(settings: list[TagSettingsModel]) -> InlineKeyboardMarkup:
     btns = []
     for setting in settings:
         btns.append([
-            InlineKeyboardButton(text=f"{setting.tag} ---> {setting.channel}", callback_data=setting.id)
+            InlineKeyboardButton(text=f"{setting.tag} ---> {setting.channel}", callback_data=f"{setting.id}")
         ])
     btns.append([InlineKeyboardButton(text=f"Добавить", callback_data="add")])
     return InlineKeyboardMarkup(inline_keyboard=btns)

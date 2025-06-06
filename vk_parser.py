@@ -17,7 +17,7 @@ cache = CacheStorage("wall-posts", PostCache, True)
 skip_cache = CacheStorage("skip-wall-posts", SkipWallPost, True)
 
 async def make_post(post: Wall):
-    tg = vk_to_tg(post)
+    tg = await vk_to_tg(post)
     if not tg:
         skip_data: list[SkipWallPost] = skip_cache.get()
         skip_data.append(SkipWallPost(vk_id=post.id))

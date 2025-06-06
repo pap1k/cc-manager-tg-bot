@@ -1,6 +1,8 @@
 from classes.VkClasses import Wall, Attachment
 from config import settings
 import logging
+from services.Tag import TagService
+from models import TagSettingsModel
 
 class TgPost:
     text: str
@@ -55,7 +57,35 @@ def extract_tag_and_text(content: str) -> tuple[str | None, str]:
 
     return tag if tag else None, text.strip()
 
-def vk_to_tg(wall: Wall) -> TgPost | None:
+async def vk_to_tg(wall: Wall) -> TgPost | None:
+    posttag, posttext = extract_tag_and_text(wall.text)
+    if not posttag:
+        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id})")
+        return
+    setting = await TagService.get_one(TagSettingsModel.tag, posttag)
+    if not setting:
+        logging.warning(f"[PARSE] Обнаружен неизвестный тег: <{posttag}>")
+        return
+    elif setting.tag == "__skip":
+        logging.info(f"[PARSE] Пропускаем пост <{wall.id}>, тег <{posttag}>")
+        return
+    else:
+        post = TgPost(posttext, settings.TG_CHAT_ID, setting.channel)
+        
+        if len(post.attachments) == 0:
+            if wall.copyright:
+                link_txt = "абоба"
+                match wall.copyright.name:
+                    case "gta-trinity.com":
+                        link_txt = "Подробности на форуме"
+                post.text += f"\n\n<a href=\"{wall.copyright.link}\">{link_txt}</a>"
+            
+            post.text += f"\n<a href=\"https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
+
+        return post
+        
+
+def vk_to_tg_old(wall: Wall) -> TgPost | None:
     posttag, posttext = extract_tag_and_text(wall.text)
     topic = -1
     if posttag:
@@ -72,7 +102,7 @@ def vk_to_tg(wall: Wall) -> TgPost | None:
         if topic == -1:
             logging.warning(f"[PARSE] Обнаружен неизвестный тег: <{posttag}>")
     else:
-        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id}")
+        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id})")
 
     post = TgPost(posttext, settings.TG_CHAT_ID, topic)
     # Скрыл аттачи чтобы можно было нормально постить длинный текст (лимиты тг)
