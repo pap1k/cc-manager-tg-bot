@@ -66,7 +66,7 @@ async def vk_to_tg(wall: Wall) -> TgPost | None:
     if not setting:
         logging.warning(f"[PARSE] Обнаружен неизвестный тег: <{posttag}>")
         return
-    elif setting.tag == "__skip":
+    elif setting.channel == "__skip":
         logging.info(f"[PARSE] Пропускаем пост <{wall.id}>, тег <{posttag}>")
         return
     else:
