@@ -1,8 +1,6 @@
-import datetime
-from classes.Storage import CacheDTO
-import json
+import datetime, json
 
-class PostCache(CacheDTO):
+class PostCache:
     vk_id: int
     tg_id: int
     topic_id: int
@@ -10,10 +8,9 @@ class PostCache(CacheDTO):
     last_edit: datetime.datetime
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self.vk_id = kwargs.get("vk_id")
         self.tg_id = kwargs.get("tg_id")
-        self.topic_id = kwargs.get("tg_id")
+        self.topic_id = kwargs.get("topic_id")
         self.post_time = kwargs.get("post_time")
         if self.post_time != None:
             if type(self.post_time) == int or type(self.post_time) == float:
@@ -26,7 +23,10 @@ class PostCache(CacheDTO):
         else:
             self.last_edit = self.post_time
 
-    def to_json(self):
+    def from_json(self, **kwargs) -> 'PostCache':
+        return self(**kwargs)
+
+    def to_json(self) -> str:
         tojson = {
             "vk_id": self.vk_id,
             "tg_id": self.tg_id,

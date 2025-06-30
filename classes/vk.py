@@ -1,7 +1,6 @@
 import aiohttp, logging
 from classes.VkClasses import Wall
 from config import settings
-import json
 
 API_URL = "https://api.vk.com/method/"
 
