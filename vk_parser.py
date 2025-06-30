@@ -17,6 +17,8 @@ _KEY_POSTED = "PostedKey:"
 
 vk = VK(settings.VK_TOKEN)
 
+start_time = datetime.datetime.now()
+
 async def make_post(post: Wall):
     tg = await vk_to_tg(post)
     if not tg:
@@ -58,6 +60,8 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
         queue_edit = []
 
         for post in wall:
+            if post.date < start_time:
+                continue
             # Проверка новых постов
             need_post = True
             cache_pointer = None
