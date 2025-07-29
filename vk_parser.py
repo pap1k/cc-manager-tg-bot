@@ -11,7 +11,7 @@ from helpers.send_log import AsyncRemoteHandler, send_to_remote
 
 POLL_DELAY = 60
 
-CACHE_ALIVE = 60*60*48 # 2 days
+CACHE_ALIVE = 60*60*24*7 # 7 days
 _KEY_SKIP = "SkipWallDataKey:"
 _KEY_POSTED = "PostedKey:"
 
