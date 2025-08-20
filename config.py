@@ -38,6 +38,14 @@ class Settings(BaseSettings):
     @property
     def CHAT_THREAD_ID(self):
         return 1
+    
+    @property
+    def BANWORDS(self):
+        return [
+            'удаленка',
+            'заработок',
+            'на дому',
+        ]
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -23,5 +23,5 @@ class AsyncRemoteHandler(logging.Handler):
             print(f"🔴[REMOTE_LOGGER] Async log error: {e}")
 
 async def send_to_remote(log: str):
-    await bot.send_message(settings.LOG_CHAT_ID, f"[VK-PARSER] {log}",  message_thread_id = LOG_THREAD_ID)
+    await bot.send_message(settings.LOG_CHAT_ID, f"[LOG] {log}",  message_thread_id = LOG_THREAD_ID)
     
