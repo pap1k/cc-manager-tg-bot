@@ -1,7 +1,6 @@
 from aiogram import Router, Bot
 from aiogram.types import Message
 from aiogram import F
-import logging
 
 from config import settings
 from services.MessageLogger import LogMessageService
@@ -11,7 +10,6 @@ router = Router()
 router.message.middleware()
 
 async def check_banwords(bot: Bot, text: str, user_id: int) -> bool:
-    logger = logging.getLogger()
     for word in settings.BANWORDS:
         if word in text or word.replace('е', 'ё') in text:
             messages_count = len(await LogMessageService.get_all())
@@ -29,6 +27,7 @@ async def check_banwords(bot: Bot, text: str, user_id: int) -> bool:
 
 @router.message(F.chat.id == settings.TG_CHAT_ID)
 async def any_group_message(message: Message):
+    print(123123)
     if message.message_thread_id == settings.CHAT_THREAD_ID:
         text = message.text if message.text else "<Не текст>"
         if await check_banwords(message.bot, text, message.from_user.id):
