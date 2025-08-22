@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
-from models import TagSettingsModel
+ 
+from models import TagSettingsModel, BanlistModel, BanAction
 
 def punishment_list() -> InlineKeyboardMarkup:
     punish = {
@@ -49,3 +49,33 @@ def tag_edit() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="❌ Удалить", callback_data="delete")],
         [InlineKeyboardButton(text="Отмена", callback_data="cancel")],
     ])
+
+def banlog_actions(records: list[BanlistModel], is_first=False, is_last=False) -> InlineKeyboardMarkup:
+    btns = []
+    for record in records:
+        action = ""
+        match record.action:
+            case BanAction.ban:
+                action = "заблокирован"
+            case BanAction.mute:
+                action = "замьючен"
+            case BanAction.tempban:
+                action = "временно заблокирован"
+        btns.append([
+            InlineKeyboardButton(text=f"{record.user_id} {action} [{record.created_at}]", callback_data=f"{record.id}")
+        ])
+    
+    next_prev = []
+    if not is_first:
+        next_prev.append(InlineKeyboardButton(text="<< Назад", callback_data=f"prev"))
+    if not is_last:
+        next_prev.append(InlineKeyboardButton(text="Далее >>", callback_data=f"next"))
+    if len(next_prev) > 0:
+        btns.append(next_prev)
+
+    btns.append([InlineKeyboardButton(text="Закрыть", callback_data=f"cancel")])
+
+    return InlineKeyboardMarkup(inline_keyboard=btns)
+
+def banlog_view():
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад", callback_data="back")]])

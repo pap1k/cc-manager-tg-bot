@@ -1,6 +1,7 @@
-from sqlalchemy import update, select, text
+from sqlalchemy import update, select, text, func
+from sqlalchemy.orm import selectinload
 from database import db_session
-from models import BanlistModel, LogModel, LogAction
+from models import BanlistModel, LogModel, LogAction, BanAction
 
 class BanlistService:
     
@@ -20,55 +21,76 @@ class BanlistService:
     async def ban(moder_id: int, user_id: int, term: int = 7, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,
-            action=LogAction.ban, 
+            action=LogAction.banlist, 
             payload={"term": term, "reason": reason, "user_id": user_id},
-            )
-        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term)
+        )
+        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term, action=BanAction.ban)
         await BanlistService._create_records(logmodel, banmodel)
 
     @staticmethod
     async def tempban(moder_id: int, user_id: int, term: int = 7, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,
-            action=LogAction.tempban, 
+            action=LogAction.banlist, 
             payload={"term": term, "reason": reason, "user_id": user_id},
-            )
-        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term)
+        )
+        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term, action=BanAction.tempban)
         await BanlistService._create_records(logmodel, banmodel)
 
     @staticmethod
     async def mute(moder_id: int, user_id: int, term: int = 7, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,
-            action=LogAction.mute, 
+            action=LogAction.banlist, 
             payload={"term": term, "reason": reason, "user_id": user_id},
-            )
-        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term)
+        )
+        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term, action=BanAction.mute)
         await BanlistService._create_records(logmodel, banmodel)
 
     @staticmethod
     async def kick(moder_id: int, user_id: int, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,
-            action=LogAction.kick, 
+            action=LogAction.banlist, 
             payload={"reason": reason, "user_id": user_id},
-            )
+        )
         await BanlistService._create_records(logmodel)
 
     @staticmethod
     async def warn(moder_id: int, user_id: int, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,
-            action=LogAction.warn, 
+            action=LogAction.banlist, 
             payload={"reason": reason, "user_id": user_id},
-            )
+        )
         await BanlistService._create_records(logmodel)
 
     @staticmethod
-    async def get(user_id: int):
+    async def get_count():
         async with db_session() as session:
-            query = select(LogModel).where(
-                text("payload->>'user_id' = :user_id").bindparams(user_id=str(user_id))
+            query = select(func.count(BanlistModel.id))
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_all(offset = 0, limit = 10):
+        async with db_session() as session:
+            query = (
+                select(BanlistModel)
+                .order_by(BanlistModel.id.desc())
+                .limit(limit)
+                .offset(offset)
             )
             result = await session.execute(query)
             return result.scalars().all()
+        
+    @staticmethod
+    async def get_one(id: int):
+        async with db_session() as session:
+            query = (
+                select(BanlistModel)
+                .options(selectinload(BanlistModel.moder))
+                .where(BanlistModel.id == id)
+            )
+            result = await session.execute(query)
+            return result.scalar_one_or_none()

@@ -1,20 +1,13 @@
-import logging
-
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import Message, MessageReactionUpdated, CallbackQuery
-from aiogram.enums import ChatType
-from aiogram import F
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from middlewares.admin import CheckModerAccessMiddleware
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, delete, update
 
 from db_services.Tag import TagService
-
-from config import settings
 
 from .keyboards import tag_settings, tag_edit
 

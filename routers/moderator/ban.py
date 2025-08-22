@@ -1,5 +1,6 @@
 import logging, time, datetime
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram import Router
 from aiogram.types import Message, MessageReactionUpdated, CallbackQuery, ChatPermissions
 from aiogram import F
@@ -67,7 +68,10 @@ async def handle_reaction(event: MessageReactionUpdated, state: FSMContext):
         my_state.update_data(ban_user=fwd_msg.forward_origin.sender_user.id)
         my_state.step = BanStage.punish_select
         await event.bot.send_message(event.user.id, f"Выберите наказание для пользователя <code>{fwd_msg.forward_origin.sender_user.first_name} {fwd_msg.forward_origin.sender_user.last_name}</code>", parse_mode="HTML", reply_markup=punishment_list())
-        await event.bot.delete_message(settings.TG_CHAT_ID, event.message_id)
+        try:
+            await event.bot.delete_message(settings.TG_CHAT_ID, event.message_id)
+        except TelegramBadRequest:
+            await event.bot.send_message(event.user.id, "Сообщение не может быть удалено")
     else:
         # await state.set_state(BanStage.author_id)
         my_state.step = BanStage.author_id
@@ -90,7 +94,11 @@ async def input_id(message: Message):
         await message.reply("Пользователь с указанным ID не найден в группе. Проверьте ID на корректность.")
         return
     
-    await message.bot.delete_message(settings.TG_CHAT_ID, my_state.data['message_id'])
+    try:
+        await message.bot.delete_message(settings.TG_CHAT_ID, my_state.data['message_id'])
+    except TelegramBadRequest:
+        await message.bot.send_message(message.from_user.id, "Сообщение не может быть удалено")
+    
     
     my_state.update_data(ban_user=member.user.id)
     my_state.step = BanStage.punish_select
