@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 from config import settings
-from services.Moder import ModerService
+from db_services.Moder import ModerService
 
 from models import Level, ModerModel
 

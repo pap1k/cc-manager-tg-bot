@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from database import db_session
 from models import ModerModel, Level
 
-from services.Moder import ModerService
+from db_services.Moder import ModerService
 from .rules import moder_rules
 
 router = Router()

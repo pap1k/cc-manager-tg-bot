@@ -1,7 +1,7 @@
 from classes.VkClasses import Wall, Attachment
 from config import settings
 import logging
-from services.Tag import TagService
+from db_services.Tag import TagService
 from models import TagSettingsModel
 
 class TgPost:

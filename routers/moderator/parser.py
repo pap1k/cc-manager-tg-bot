@@ -12,7 +12,7 @@ from middlewares.admin import CheckModerAccessMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, delete, update
 
-from services.Tag import TagService
+from db_services.Tag import TagService
 
 from config import settings
 

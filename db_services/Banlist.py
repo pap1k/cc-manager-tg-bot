@@ -27,6 +27,26 @@ class BanlistService:
         await BanlistService._create_records(logmodel, banmodel)
 
     @staticmethod
+    async def tempban(moder_id: int, user_id: int, term: int = 7, reason: str = ""):
+        logmodel = LogModel(
+            moder_id=moder_id,
+            action=LogAction.tempban, 
+            payload={"term": term, "reason": reason, "user_id": user_id},
+            )
+        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term)
+        await BanlistService._create_records(logmodel, banmodel)
+
+    @staticmethod
+    async def mute(moder_id: int, user_id: int, term: int = 7, reason: str = ""):
+        logmodel = LogModel(
+            moder_id=moder_id,
+            action=LogAction.mute, 
+            payload={"term": term, "reason": reason, "user_id": user_id},
+            )
+        banmodel = BanlistModel(moder_id=moder_id, user_id=user_id, term=term)
+        await BanlistService._create_records(logmodel, banmodel)
+
+    @staticmethod
     async def kick(moder_id: int, user_id: int, reason: str = ""):
         logmodel = LogModel(
             moder_id=moder_id,

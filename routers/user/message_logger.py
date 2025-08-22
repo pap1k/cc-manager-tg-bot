@@ -3,13 +3,25 @@ from aiogram.types import Message
 from aiogram import F
 
 from config import settings
-from services.MessageLogger import LogMessageService
+from db_services.MessageLogger import LogMessageService
 from models import LogMessagesModel
 
 router = Router()
 router.message.middleware()
 
 async def check_banwords(bot: Bot, text: str, user_id: int) -> bool:
+    text = text.lower()
+    text = text.replace(r'(\s+)', ' ')
+    text = text.replace('o', 'о')
+    text = text.replace('e', 'е')
+    text = text.replace('x', 'х')
+    text = text.replace('a', 'а')
+    text = text.replace('p', 'р')
+    text = text.replace('u', 'и')
+    text = text.replace('h', 'н')
+    text = text.replace('k', 'к')
+    text = text.replace('c', 'с')
+    text = text.replace('m', 'м')
     for word in settings.BANWORDS:
         if word in text or word.replace('е', 'ё') in text:
             messages_count = len(await LogMessageService.get_all())

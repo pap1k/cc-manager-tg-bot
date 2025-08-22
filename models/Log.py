@@ -7,6 +7,7 @@ import enum
 class LogAction(enum.Enum):
     kick = "kick"
     ban = "ban"
+    tempban = "tempban"
     post = "post"
     mute = "mute"
     warn = "warn"

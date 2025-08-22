@@ -8,7 +8,7 @@ from middlewares.admin import CheckModerAccessMiddleware
 from config import settings
 from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.exc import IntegrityError
-from services.Moder import ModerService
+from db_services.Moder import ModerService
 
 from models import Level, ModerModel
 from database import db_session

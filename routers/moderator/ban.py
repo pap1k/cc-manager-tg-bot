@@ -1,20 +1,17 @@
 import logging, time, datetime
 
 from aiogram import Router
-from aiogram.filters import Command
 from aiogram.types import Message, MessageReactionUpdated, CallbackQuery, ChatPermissions
-from aiogram.enums import ChatType
 from aiogram import F
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from middlewares.admin import CheckModerAccessMiddleware
 from config import settings
-from sqlalchemy.exc import IntegrityError
 
 from .keyboards import punishment_list, punish_term_select
 
-from database import db_session
-from models import ModerModel, Level
+from models import Level
+from db_services.Banlist import BanlistService
 
 router = Router()
 router.message.middleware(CheckModerAccessMiddleware(Level.middle))
@@ -108,6 +105,7 @@ async def apply_punish(callback: CallbackQuery, state: FSMContext):
     elif callback.data == "ban":
         await callback.bot.ban_chat_member(settings.TG_CHAT_ID, my_state.data['ban_user'], revoke_messages=True)
         del custom_states[callback.from_user.id]
+        await BanlistService.ban(callback.from_user.id, my_state.data['ban_user'], f"[AUTO] Реакцией на сообщение {my_state.data['message_id']}")
         await callback.message.edit_text("Наказание выдано")
     elif callback.data == "tempban":
         my_state.step = BanStage.term
@@ -154,8 +152,10 @@ async def term_select(callback: CallbackQuery, state: FSMContext):
     ban_term = time.time()+date_plus
     match my_state.data['action']:
         case 'tempban':
+            await BanlistService.tempban(callback.from_user.id, my_state.data['ban_user'], callback.data, f"[AUTO] Реакцией на сообщение {my_state.data['message_id']}")
             await callback.bot.ban_chat_member(settings.TG_CHAT_ID, my_state.data['ban_user'], time.time()+date_plus)
         case 'mute':
+            await BanlistService.mute(callback.from_user.id, my_state.data['ban_user'], callback.data, f"[AUTO] Реакцией на сообщение {my_state.data['message_id']}")
             await callback.bot.restrict_chat_member(settings.TG_CHAT_ID, my_state.data['ban_user'], mute_permissions, until_date=ban_term)
     del custom_states[callback.from_user.id]
     await callback.message.edit_text("Наказание выдано до "+datetime.datetime.fromtimestamp(ban_term).strftime("%d.%m.%Y в %H:%M"))
