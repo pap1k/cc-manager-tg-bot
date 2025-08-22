@@ -16,7 +16,7 @@ class BanlistModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     moder_id: Mapped[tg_id_f] = mapped_column(ForeignKey("moders.tg_id"))
     action: Mapped[BanAction] = mapped_column(default=BanAction.ban)
-    user_id: Mapped[int]
+    user_id: Mapped[tg_id_f]
     term: Mapped[str]
     created_at: Mapped[created_at_f]
     updated_at: Mapped[updated_at_f]

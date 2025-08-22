@@ -15,19 +15,6 @@ from .rules import moder_rules
 router = Router()
 router.message.middleware(CheckModerAccessMiddleware())
 
-@router.message(Command("test"))
-async def test(message: Message):
-    async with db_session() as session:
-        moder = ModerModel(tg_id=message.from_user.id)
-        session.add(moder)
-        try:
-            await session.commit()
-            await message.reply("ok")
-        except IntegrityError:
-            await message.reply("Пользователь с таким ID уже присутствует в базе")
-        except Exception:
-            await message.reply("Произошла ошибка")
-
 @router.message(Command("cat"))
 async def cat(message: Message):
     msg = await message.reply("Ищу котика для вас...")
