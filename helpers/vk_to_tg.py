@@ -60,7 +60,7 @@ def extract_tag_and_text(content: str) -> tuple[str | None, str]:
 async def vk_to_tg(wall: Wall) -> TgPost | None:
     posttag, posttext = extract_tag_and_text(wall.text)
     if not posttag:
-        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id})")
+        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.ru/offtrinityrpg?w=wall-145098987_{wall.id})")
         return
     setting = await TagService.get_one(TagSettingsModel.tag, posttag)
     if not setting:
@@ -80,7 +80,7 @@ async def vk_to_tg(wall: Wall) -> TgPost | None:
                         link_txt = "Подробности на форуме"
                 post.text += f"\n\n<a href=\"{wall.copyright.link}\">{link_txt}</a>"
             
-            post.text += f"\n<a href=\"https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
+            post.text += f"\n<a href=\"https://vk.ru/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
 
         return post
         
@@ -102,7 +102,7 @@ def vk_to_tg_old(wall: Wall) -> TgPost | None:
         if topic == -1:
             logging.warning(f"[PARSE] Обнаружен неизвестный тег: <{posttag}>")
     else:
-        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id})")
+        logging.warning(f"[PARSE] Не получилось найти тег у поста {wall.id} (https://vk.ru/offtrinityrpg?w=wall-145098987_{wall.id})")
 
     post = TgPost(posttext, settings.TG_CHAT_ID, topic)
     # Скрыл аттачи чтобы можно было нормально постить длинный текст (лимиты тг)
@@ -119,7 +119,7 @@ def vk_to_tg_old(wall: Wall) -> TgPost | None:
                     link_txt = "Подробности на форуме"
             post.text += f"\n\n<a href=\"{wall.copyright.link}\">{link_txt}</a>"
         
-        post.text += f"\n<a href=\"https://vk.com/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
+        post.text += f"\n<a href=\"https://vk.ru/offtrinityrpg?w=wall-145098987_{wall.id}\">Пост в ВК</a>"
 
     return post
 
