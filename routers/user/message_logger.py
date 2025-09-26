@@ -24,7 +24,7 @@ async def check_banwords(bot: Bot, text: str, user_id: int) -> bool:
     text = text.replace('m', 'м')
     for word in settings.BANWORDS:
         if word in text or word.replace('е', 'ё') in text:
-            messages_count = len(await LogMessageService.get_count(LogMessagesModel.user_id, user_id))
+            messages_count = await LogMessageService.get_count(LogMessagesModel.user_id, user_id)
             user = await bot.get_chat_member(settings.TG_CHAT_ID, user_id)
             log_text = f"\nОтправлено подозрительное сообщение\nTEXT={text}\nUSER={user.user.id} ({user.user.full_name})"
             if messages_count > 0:
