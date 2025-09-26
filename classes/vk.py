@@ -2,7 +2,7 @@ import aiohttp, logging
 from classes.VkClasses import Wall
 from config import settings
 
-API_URL = "https://api.vk.com/method/"
+API_URL = "https://api.vk.ru/method/"
 
 class VK:
     token: str
