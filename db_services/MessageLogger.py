@@ -29,7 +29,7 @@ class LogMessageService:
     async def get_count(key, val):
         async with db_session() as session:
             result = await session.execute(select(func.count(LogMessagesModel.id)).filter(key == val))
-            return result.scalar()
+            return result.scalars()
         
     @staticmethod
     async def get_one(key, val):
