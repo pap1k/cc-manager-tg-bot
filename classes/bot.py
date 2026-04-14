@@ -1,12 +1,17 @@
 from config import settings
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputFile, InputMediaPhoto
-import os
+from aiogram.client.session.aiohttp import AiohttpSession
+import os, sys
 
 
 class TelegramBot:
     def __init__(self, token: str):
-        self.bot = Bot(token=token)
+        if "-p" in sys.argv:
+            proxy_session = AiohttpSession(proxy="http://127.0.0.1:8118")
+            self.bot = Bot(token=token, session=proxy_session)
+        else:
+            self.bot = Bot(token=token)
         self.dp = Dispatcher()
     
     async def send_photo(self, chat_id: int | str, photo: str | bytes, caption: str = "", **kwargs):
