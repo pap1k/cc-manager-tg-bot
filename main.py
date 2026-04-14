@@ -10,7 +10,7 @@ from allRouters import routers
 
 def create_bot(use_proxy: bool) -> tuple[Bot, Dispatcher]:
     if use_proxy:
-        session = AiohttpSession(proxy="127.0.0.1")
+        session = AiohttpSession(proxy="http://127.0.0.1:8118")
         bot = Bot(token=settings.TG_TOKEN, session=session)
     else:
         bot = Bot(token=settings.TG_TOKEN)
