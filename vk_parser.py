@@ -1,5 +1,5 @@
 import asyncio, datetime, logging, json
-from typing import Tuple
+from typing import Tuple, Optional
 from classes.CacheModels.PostCache import PostCache
 from config import settings
 from cache import redis_client
@@ -51,7 +51,7 @@ async def edit_post(post: PostCache):
     else:
         logging.debug("EDIT CALLED")
 
-async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
+async def get_vk_updates() -> Tuple[Optional[list[Wall]], Optional[list[PostCache]]]:
     wall = await vk.wall_get(domain=settings.VK_GROUP_DOMAIN, count=10)
     if wall:
         wall.reverse()
@@ -83,6 +83,7 @@ async def get_vk_updates() -> Tuple[list[Wall], list[PostCache]]:
             if cache_pointer:
                 queue_edit.append(cache_pointer)
         return queue_post, queue_edit
+    return None, None
 
 async def run():
     logging.basicConfig(level=logging.DEBUG)

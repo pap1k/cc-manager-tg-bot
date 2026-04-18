@@ -31,8 +31,7 @@ class VK:
             async with session.post(API_URL+method, data=params, headers={"Authorization": f"Bearer {settings.VK_TOKEN}"}, ssl=False) as response:
                 try:
                     vkr = await response.json()
-                    if 'response' in vkr:
-                        return vkr['response']
+                    return vkr['response']
                 except Exception as e:
                     logging.error("Vk response parse error. Raw: "+await response.text())
                     return None
