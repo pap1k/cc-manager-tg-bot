@@ -8,12 +8,12 @@ import os, sys
 class TelegramBot:
     def __init__(self, token: str):
         if "-p" in sys.argv:
-            proxy_session = AiohttpSession(proxy="http://127.0.0.1:8118")
+            proxy_session = AiohttpSession(proxy="socks5://127.0.0.1:8000")
             self.bot = Bot(token=token, session=proxy_session)
         else:
             self.bot = Bot(token=token)
         self.dp = Dispatcher()
-    
+
     async def send_photo(self, chat_id: int | str, photo: str | bytes, caption: str = "", **kwargs):
         if isinstance(photo, str) and photo.startswith(("http://", "https://")):
             return await self.bot.send_photo(chat_id, photo, caption=caption, **kwargs)

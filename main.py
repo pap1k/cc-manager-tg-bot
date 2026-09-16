@@ -10,7 +10,7 @@ from allRouters import routers
 
 def create_bot(use_proxy: bool) -> tuple[Bot, Dispatcher]:
     if use_proxy:
-        session = AiohttpSession(proxy="http://127.0.0.1:8118")
+        session = AiohttpSession(proxy="socks5://127.0.0.1:8000")
         bot = Bot(token=settings.TG_TOKEN, session=session)
     else:
         bot = Bot(token=settings.TG_TOKEN)
@@ -34,6 +34,6 @@ if __name__ == "__main__":
     if "-dev" in sys.argv:
         import py_hot_reload
         py_hot_reload.run_with_reloader(main)
-    
+
     else:
         main("-p" in sys.argv)
