@@ -15,6 +15,7 @@ class ModerModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id: Mapped[tg_id_f_unique]
     name: Mapped[str] = mapped_column(nullable=True)
+    tag: Mapped[str] = mapped_column(nullable=True)
     level: Mapped[Level] = mapped_column(default=Level.junior)
     active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[created_at_f]

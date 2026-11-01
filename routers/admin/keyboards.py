@@ -27,6 +27,7 @@ def edit_moder(moder: ModerModel):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔧 Изменить роль", callback_data="act:role")],
         [InlineKeyboardButton(text="✏️ Изменить ник", callback_data="act:nick")],
+        [InlineKeyboardButton(text="🏷 Изменить тег", callback_data="act:tag")],
         [prom_dem],
         [InlineKeyboardButton(text="⬅️ Назад", callback_data="act:back")]
     ])

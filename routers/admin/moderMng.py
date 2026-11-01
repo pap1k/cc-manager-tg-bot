@@ -1,3 +1,5 @@
+import html
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
@@ -6,7 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from middlewares.admin import CheckModerAccessMiddleware
 from config import settings
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramAPIError
 from sqlalchemy.exc import IntegrityError
 from db_services.Moder import ModerService
 
@@ -27,17 +29,35 @@ class Navigation(StatesGroup):
 class Editmoder(StatesGroup):
     select = State()
     edit_name = State()
+    edit_tag = State()
     change_level = State()
 
 class NewAdmin(StatesGroup):
     name = State()
     tg_id = State()
 
+async def apply_moder_tag(bot, moder: ModerModel, tag: str | None) -> str | None:
+    """Устанавливает кастомный титул администратора в чате.
+
+    None или пустая строка снимает тег. Возвращает текст ошибки Telegram
+    либо None при успехе.
+    """
+    try:
+        await bot.set_chat_administrator_custom_title(
+            chat_id=settings.TG_CHAT_ID,
+            user_id=moder.tg_id,
+            custom_title=tag or ""
+        )
+    except TelegramAPIError as e:
+        return e.message
+    return None
+
 async def display_moder_info(message: Message, state: FSMContext, moder: ModerModel):
     info = f"""
         <b>ИНФОРМАЦИЯ ПО МОДЕРАТОРУ</b>
         Telegram ID: <code>{moder.tg_id}</code>
         Записан как: <code>{moder.name if moder.name else ''}</code>
+        Тег: <code>{html.escape(moder.tag) if moder.tag else '—'}</code>
         Уровень: <code>{moder.level}</code>
         Снят: <code>{'Нет' if moder.active else 'Да'}</code>
         Дата назначения: <code>{moder.created_at.strftime('%d.%m.%Y %H:%M:%S')}</code>
@@ -115,10 +135,25 @@ async def edit_moder_cb(callback: CallbackQuery, moder_caller: ModerModel, state
             if moder_caller.level.value >= Level.senior.value:
                 moder = await ModerService.update(moder, active=True)
                 await callback.bot.promote_chat_member(settings.TG_CHAT_ID, moder.tg_id, **moder_rules[moder.level])
+                if moder.tag:
+                    await apply_moder_tag(callback.bot, moder, moder.tag)
                 await callback.answer("Успешно")
             else:
                 await callback.answer("Недостаточно прав")
             await display_moder_info(callback.message, state, moder)
+        case "tag":
+            if moder_caller.level.value >= Level.senior.value:
+                await callback.answer()
+                await state.set_state(Editmoder.edit_tag)
+                await callback.message.edit_text(
+                    f"Текущий тег: <code>{html.escape(moder.tag) if moder.tag else '—'}</code>\n\n"
+                    "Укажите новый тег (до 16 символов), который будет отображаться в чате рядом с именем.\n"
+                    "Отправьте <code>-</code>, чтобы убрать тег.",
+                    parse_mode="HTML"
+                )
+            else:
+                await callback.answer("Недостаточно прав")
+                await display_moder_info(callback.message, state, moder)
         case "nick":
             if moder_caller.level.value >= Level.senior.value:
                 await callback.answer()
@@ -147,6 +182,8 @@ async def edit_moder_role_cb(callback: CallbackQuery, moder_caller: ModerModel, 
             moder = await ModerService.update(moder, level=role)
             # try:
             await callback.bot.promote_chat_member(settings.TG_CHAT_ID, moder.tg_id, **moder_rules[role])
+            if moder.tag:
+                await apply_moder_tag(callback.bot, moder, moder.tag)
             await state.clear()
             await callback.answer("Успешно")
             await display_moder_info(callback.message, state, moder)
@@ -161,6 +198,30 @@ async def name_input(message: Message, state: FSMContext):
     moder: ModerModel = data['moder']
     moder = await ModerService.update(moder, name=message.text)
     await state.update_data(moder = moder)
+    await message.reply("Успешно")
+    await display_moder_info(message, state, moder)
+
+@router.message(Editmoder.edit_tag)
+async def tag_input(message: Message, state: FSMContext):
+    if message.text == '/cancel':
+        await state.clear()
+        await message.reply("Отменено.")
+        return
+    data = await state.get_data()
+    moder: ModerModel = data['moder']
+    value = (message.text or "").strip()
+    if not value:
+        return await message.reply("Отправьте тег текстом или <code>-</code>, чтобы убрать его", parse_mode="HTML")
+    tag = None if value == "-" else value
+    if tag is not None and len(tag) > 16:
+        return await message.reply("Тег не должен быть длиннее 16 символов")
+
+    error = await apply_moder_tag(message.bot, moder, tag)
+    if error:
+        return await message.reply(f"Не удалось изменить тег: {error}")
+
+    moder = await ModerService.update(moder, tag=tag)
+    await state.update_data(moder=moder)
     await message.reply("Успешно")
     await display_moder_info(message, state, moder)
 
