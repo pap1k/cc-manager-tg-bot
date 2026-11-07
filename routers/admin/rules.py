@@ -2,7 +2,7 @@ from models import Level
 
 moder_rules = {
     Level.junior: {
-        "can_manage_chat":        False,
+        "can_manage_chat":        True,
         "can_delete_messages":    True,
         "can_manage_video_chats": False,
         "can_restrict_members":   False,
@@ -18,7 +18,7 @@ moder_rules = {
         "can_manage_topics":      False,
     },
     Level.middle: {
-        "can_manage_chat":        False,
+        "can_manage_chat":        True,
         "can_delete_messages":    True,
         "can_manage_video_chats": False,
         "can_restrict_members":   True,
