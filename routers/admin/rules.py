@@ -15,7 +15,7 @@ moder_rules = {
         "can_post_messages":      True,
         "can_edit_messages":      True,
         "can_pin_messages":       True,
-        "can_manage_topics":      False,
+        "can_manage_topics":      True,
     },
     Level.middle: {
         "can_manage_chat":        True,
